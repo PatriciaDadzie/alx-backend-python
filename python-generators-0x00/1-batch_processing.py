@@ -14,7 +14,7 @@ def stream_users_in_batches(batch_size):
         rows = cursor.fetchall()
         if not rows:
             break
-        yield rows   
+        yield rows    # ✅ use yield to stream batches
         offset += batch_size
 
     cursor.close()
@@ -25,7 +25,7 @@ def batch_processing(batch_size):
     """
     Processes each batch of users by filtering users over the age of 25
     """
-    for batch in stream_users_in_batches(batch_size):   # loop 1
-        for user in batch:                              # loop 2
+    for batch in stream_users_in_batches(batch_size):
+        for user in batch:                              
             if user['age'] > 25:
                 yield user   
