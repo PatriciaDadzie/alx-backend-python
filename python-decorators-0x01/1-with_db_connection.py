@@ -6,11 +6,11 @@ def with_db_connection(func):
     """Decorator to automatically handle DB connections"""
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        conn = sqlite3.connect('users.db')   # ✅ open connection
+        conn = sqlite3.connect('users.db')   # open connection
         try:
             result = func(conn, *args, **kwargs)
         finally:
-            conn.close()   # ✅ always close connection
+            conn.close()   #always close connection
         return result
     return wrapper
 
