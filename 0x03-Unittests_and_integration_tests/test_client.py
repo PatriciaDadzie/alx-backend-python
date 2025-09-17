@@ -64,9 +64,14 @@ class TestGithubOrgClient(unittest.TestCase):
         self.assertEqual(GithubOrgClient.has_license(repo, license_key), expected)
 
 
-@parameterized_class(("org_payload", "repos_payload", "expected_repos", "apache2_repos"),
-                     [(fixtures.org_payload, fixtures.repos_payload,
-                       fixtures.expected_repos, fixtures.apache2_repos)])
+@parameterized_class([
+    {
+        "org_payload": fixtures.org_payload,
+        "repos_payload": fixtures.repos_payload,
+        "expected_repos": fixtures.expected_repos,
+        "apache2_repos": fixtures.apache2_repos,
+    }
+])
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests for GithubOrgClient using fixtures"""
 
@@ -79,16 +84,16 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         repos_resp.json.return_value = cls.repos_payload
 
         def get_side_effect(url, *args, **kwargs):
-            # if the requested URL looks like a repos URL return repos_resp,
-            # otherwise return org_resp
+            # return repos response for URLs that look like repo endpoints,
+            # otherwise return the org response
             if url.endswith("/repos") or "/repos" in url:
                 return repos_resp
             return org_resp
 
-        # patch the requests.get where utils.get_json actually calls it
-        cls.get_patcher = patch("utils.requests.get", side_effect=get_side_effect)
+        # Patch the top-level requests.get so that utils.get_json (which calls requests.get)
+        # receives our mocked responses. Store the patcher object on the class.
+        cls.get_patcher = patch("requests.get", side_effect=get_side_effect)
         cls.mock_get = cls.get_patcher.start()
-
 
     @classmethod
     def tearDownClass(cls):
