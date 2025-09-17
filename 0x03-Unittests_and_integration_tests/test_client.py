@@ -9,8 +9,11 @@ from unittest.mock import patch, PropertyMock
 import sys
 import os
 
-# Ensure project root is in sys.path (for client.py to import utils)
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))  # noqa: E402
+# Ensure test dir and project root are in sys.path
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
+sys.path.insert(0, CURRENT_DIR)
+sys.path.insert(0, PROJECT_ROOT)
 
 from client import GithubOrgClient  # noqa: E402
 
