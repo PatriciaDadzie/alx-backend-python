@@ -43,7 +43,6 @@ class TestGithubOrgClient(unittest.TestCase):
         ]
         mock_get_json.return_value = repos_payload
         gh = GithubOrgClient("test_org")
-        
         with patch.object(GithubOrgClient, "_public_repos_url", new_callable=PropertyMock, return_value="fake-url"):
             repos = gh.public_repos()
             self.assertEqual(repos, ["repo1", "repo2"])
@@ -72,21 +71,16 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # create mock responses that mimic requests.get(...).json()
         org_resp = Mock()
         org_resp.json.return_value = cls.org_payload
         repos_resp = Mock()
         repos_resp.json.return_value = cls.repos_payload
 
         def get_side_effect(url, *args, **kwargs):
-            # return repos response for URLs that look like repo endpoints,
-            # otherwise return the org response
             if url.endswith("/repos") or "/repos" in url:
                 return repos_resp
             return org_resp
 
-        # Patch the top-level requests.get so that utils.get_json (which calls requests.get)
-        # receives our mocked responses. Store the patcher object on the class.
         cls.get_patcher = patch("requests.get", side_effect=get_side_effect)
         cls.mock_get = cls.get_patcher.start()
 
