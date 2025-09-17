@@ -16,13 +16,9 @@ import fixtures
 class TestGithubOrgClient(unittest.TestCase):
     """Unit tests for GithubOrgClient"""
 
-    @parameterized.expand([
-        ("google",),
-        ("abc",),
-    ])
+    @parameterized.expand([("google",), ("abc",)])
     @patch("client.get_json")
     def test_org(self, org_name: str, mock_get_json: Mock):
-        # ensure get_json is called and org property returns its result
         expected = {"login": org_name}
         mock_get_json.return_value = expected
         gh = GithubOrgClient(org_name)
@@ -47,7 +43,6 @@ class TestGithubOrgClient(unittest.TestCase):
             repos = gh.public_repos()
             self.assertEqual(repos, ["repo1", "repo2"])
             mock_get_json.assert_called_once()
-        # test filtering by license
         with patch.object(GithubOrgClient, "_public_repos_url", new_callable=PropertyMock, return_value="fake-url"):
             mock_get_json.reset_mock()
             mock_get_json.return_value = repos_payload
@@ -62,15 +57,13 @@ class TestGithubOrgClient(unittest.TestCase):
     def test_has_license(self, repo: dict, license_key: str, expected: bool):
         self.assertEqual(GithubOrgClient.has_license(repo, license_key), expected)
 
-
-@parameterized_class(("org_payload", "repos_payload", "expected_repos", "apache2_repos"),
-                     [(fixtures.org_payload, fixtures.repos_payload,
-                       fixtures.expected_repos, fixtures.apache2_repos)])
+@parameterized_class(("org_payload", "repos_payload", "expected_repos", "apache2_repos"), [(fixtures.org_payload, fixtures.repos_payload, fixtures.expected_repos, fixtures.apache2_repos)])
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests for GithubOrgClient using fixtures"""
 
     @classmethod
     def setUpClass(cls):
+        # mocked responses for requests.get(...).json()
         org_resp = Mock()
         org_resp.json.return_value = cls.org_payload
         repos_resp = Mock()
@@ -81,6 +74,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
                 return repos_resp
             return org_resp
 
+        # patch top-level requests.get so utils.get_json receives the mock
         cls.get_patcher = patch("requests.get", side_effect=get_side_effect)
         cls.mock_get = cls.get_patcher.start()
 
