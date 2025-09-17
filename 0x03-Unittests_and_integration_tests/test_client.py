@@ -3,13 +3,13 @@
 Unit tests for client.GithubOrgClient class.
 """
 
-import unittest
+from unittest import TestCase
 from parameterized import parameterized
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 from client import GithubOrgClient
 
 
-class TestGithubOrgClient(unittest.TestCase):
+class TestGithubOrgClient(TestCase):
     """Unit tests for the GithubOrgClient class."""
 
     @parameterized.expand([
@@ -28,12 +28,25 @@ class TestGithubOrgClient(unittest.TestCase):
         client = GithubOrgClient(org_name)
         result = client.org
 
-        # Ensure get_json was called once with the expected URL
-        mock_get_json.assert_called_once_with(f"https://api.github.com/orgs/{org_name}")
-
-        # Ensure org returns the mocked payload
+        mock_get_json.assert_called_once_with(
+            f"https://api.github.com/orgs/{org_name}"
+        )
         self.assertEqual(result, test_payload)
+
+    @patch.object(GithubOrgClient, "org", new_callable=dict)
+    def test_public_repos_url(self, mock_org):
+        """
+        Test that _public_repos_url returns the repos_url from org payload.
+        """
+        expected_url = "https://api.github.com/orgs/testorg/repos"
+        mock_org.update({"repos_url": expected_url})
+
+        client = GithubOrgClient("testorg")
+        result = client._public_repos_url
+
+        self.assertEqual(result, expected_url)
 
 
 if __name__ == "__main__":
+    import unittest
     unittest.main()
