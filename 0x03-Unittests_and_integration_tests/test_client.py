@@ -68,6 +68,33 @@ class TestGithubOrgClient(unittest.TestCase):
 
                 self.assertEqual(result, ["repo1", "repo2", "repo3"])
                 mock_repos_url.assert_called_once()
-                mock_get_json.assert_called_once_with(
-                    "http://fake.url"
-                )
+                mock_get_json.assert_called_once_with("http://fake.url")
+
+    def test_public_repos_with_license(self):
+        """Test that public_repos filters repos correctly by license."""
+        test_payload = [
+            {"name": "repo1", "license": {"key": "apache-2.0"}},
+            {"name": "repo2", "license": {"key": "mit"}},
+            {"name": "repo3", "license": {"key": "apache-2.0"}},
+        ]
+
+        with patch("client.get_json", return_value=test_payload):
+            with patch.object(
+                GithubOrgClient,
+                "_public_repos_url",
+                new_callable=PropertyMock,
+            ) as mock_repos_url:
+                mock_repos_url.return_value = "http://fake.url"
+
+                client = GithubOrgClient("test_org")
+
+                # No license filter → return all repos
+                all_repos = client.public_repos()
+                self.assertEqual(all_repos, ["repo1", "repo2", "repo3"])
+
+                # With license filter → return only matching ones
+                apache_repos = client.public_repos(license="apache-2.0")
+                self.assertEqual(apache_repos, ["repo1", "repo3"])
+
+                mit_repos = client.public_repos(license="mit")
+                self.assertEqual(mit_repos, ["repo2"])
