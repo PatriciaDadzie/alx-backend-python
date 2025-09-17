@@ -4,10 +4,18 @@ Unit tests for client.GithubOrgClient class.
 """
 
 import unittest
-from unittest.mock import patch, PropertyMock
 from parameterized import parameterized
+from unittest.mock import patch, PropertyMock
+import sys
+import os
 
-from .client import GithubOrgClient
+# Ensure test dir and project root are in sys.path
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
+sys.path.insert(0, CURRENT_DIR)
+sys.path.insert(0, PROJECT_ROOT)
+
+from client import GithubOrgClient  
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -26,8 +34,9 @@ class TestGithubOrgClient(unittest.TestCase):
         client = GithubOrgClient(org_name)
         result = client.org
 
-        expected_url = f"https://api.github.com/orgs/{org_name}"
-        mock_get_json.assert_called_once_with(expected_url)
+        mock_get_json.assert_called_once_with(
+            f"https://api.github.com/orgs/{org_name}"
+        )
         self.assertEqual(result, test_payload)
 
     def test_public_repos_url(self):
@@ -96,3 +105,16 @@ class TestGithubOrgClient(unittest.TestCase):
 
                 mit_repos = client.public_repos(license="mit")
                 self.assertEqual(mit_repos, ["repo2"])
+
+    @parameterized.expand([
+        ({"license": {"key": "my_license"}}, "my_license", True),
+        ({"license": {"key": "other_license"}}, "my_license", False),
+    ])
+    def test_has_license(self, repo, license_key, expected):
+        """Test GithubOrgClient.has_license with different inputs."""
+        result = GithubOrgClient.has_license(repo, license_key)
+        self.assertEqual(result, expected)
+
+
+if __name__ == "__main__":
+    unittest.main()
