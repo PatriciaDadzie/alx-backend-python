@@ -3,6 +3,10 @@
 Unit tests for client.GithubOrgClient class.
 """
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 import unittest
 from parameterized import parameterized
 from unittest.mock import patch, PropertyMock
@@ -68,7 +72,9 @@ class TestGithubOrgClient(unittest.TestCase):
 
                 self.assertEqual(result, ["repo1", "repo2", "repo3"])
                 mock_repos_url.assert_called_once()
-                mock_get_json.assert_called_once_with("http://fake.url")
+                mock_get_json.assert_called_once_with(
+                    "http://fake.url"
+                )
 
     def test_public_repos_with_license(self):
         """Test that public_repos filters repos correctly by license."""
