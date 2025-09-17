@@ -3,14 +3,16 @@
 Unit tests for client.GithubOrgClient class.
 """
 
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
 import unittest
 from parameterized import parameterized
 from unittest.mock import patch, PropertyMock
-from client import GithubOrgClient
+import sys
+import os
+
+# Ensure project root is in sys.path (for client.py to import utils)
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))  # noqa: E402
+
+from client import GithubOrgClient  # noqa: E402
 
 
 class TestGithubOrgClient(unittest.TestCase):
