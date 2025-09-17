@@ -1,13 +1,9 @@
-
 #!/usr/bin/env python3
 """A github org client
 """
-from typing import (
-    List,
-    Dict,
-)
+from typing import List, Dict
 
-from utils import (
+from .utils import (  
     get_json,
     access_nested_map,
     memoize,
@@ -15,7 +11,7 @@ from utils import (
 
 
 class GithubOrgClient:
-    """A Githib org client
+    """A Github org client
     """
     ORG_URL = "https://api.github.com/orgs/{org}"
 
@@ -29,7 +25,6 @@ class GithubOrgClient:
         """Memoized org property"""
         return get_json(self.ORG_URL.format(org=self._org_name))
 
-
     @property
     def _public_repos_url(self) -> str:
         """Public repos URL"""
@@ -37,7 +32,7 @@ class GithubOrgClient:
 
     @memoize
     def repos_payload(self) -> Dict:
-        """Memoize repos payload"""
+        """Memoized repos payload"""
         return get_json(self._public_repos_url)
 
     def public_repos(self, license: str = None) -> List[str]:
@@ -47,15 +42,13 @@ class GithubOrgClient:
             repo["name"] for repo in json_payload
             if license is None or self.has_license(repo, license)
         ]
-
         return public_repos
 
     @staticmethod
     def has_license(repo: Dict[str, Dict], license_key: str) -> bool:
-        """Static: has_license"""
+        """Static: check if repo has license"""
         assert license_key is not None, "license_key cannot be None"
         try:
-            has_license = access_nested_map(repo, ("license", "key")) == license_key
+            return access_nested_map(repo, ("license", "key")) == license_key
         except KeyError:
             return False
-        return has_license

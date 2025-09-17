@@ -4,18 +4,10 @@ Unit tests for client.GithubOrgClient class.
 """
 
 import unittest
-from parameterized import parameterized
 from unittest.mock import patch, PropertyMock
-import sys
-import os
+from parameterized import parameterized
 
-# Ensure test dir and project root are in sys.path
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
-sys.path.insert(0, CURRENT_DIR)
-sys.path.insert(0, PROJECT_ROOT)
-
-from client import GithubOrgClient  # noqa: E402
+from .client import GithubOrgClient
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -34,9 +26,8 @@ class TestGithubOrgClient(unittest.TestCase):
         client = GithubOrgClient(org_name)
         result = client.org
 
-        mock_get_json.assert_called_once_with(
-            f"https://api.github.com/orgs/{org_name}"
-        )
+        expected_url = f"https://api.github.com/orgs/{org_name}"
+        mock_get_json.assert_called_once_with(expected_url)
         self.assertEqual(result, test_payload)
 
     def test_public_repos_url(self):
@@ -77,9 +68,7 @@ class TestGithubOrgClient(unittest.TestCase):
 
                 self.assertEqual(result, ["repo1", "repo2", "repo3"])
                 mock_repos_url.assert_called_once()
-                mock_get_json.assert_called_once_with(
-                    "http://fake.url"
-                )
+                mock_get_json.assert_called_once_with("http://fake.url")
 
     def test_public_repos_with_license(self):
         """Test that public_repos filters repos correctly by license."""
@@ -99,11 +88,9 @@ class TestGithubOrgClient(unittest.TestCase):
 
                 client = GithubOrgClient("test_org")
 
-                # No license filter → return all repos
                 all_repos = client.public_repos()
                 self.assertEqual(all_repos, ["repo1", "repo2", "repo3"])
 
-                # With license filter → return only matching ones
                 apache_repos = client.public_repos(license="apache-2.0")
                 self.assertEqual(apache_repos, ["repo1", "repo3"])
 
