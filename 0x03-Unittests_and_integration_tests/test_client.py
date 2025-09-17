@@ -3,13 +3,13 @@
 Unit tests for client.GithubOrgClient class.
 """
 
-from unittest import TestCase
+import unittest
 from parameterized import parameterized
 from unittest.mock import patch, PropertyMock
 from client import GithubOrgClient
 
 
-class TestGithubOrgClient(TestCase):
+class TestGithubOrgClient(unittest.TestCase):
     """Unit tests for the GithubOrgClient class."""
 
     @parameterized.expand([
@@ -29,6 +29,23 @@ class TestGithubOrgClient(TestCase):
             f"https://api.github.com/orgs/{org_name}"
         )
         self.assertEqual(result, test_payload)
+
+    def test_public_repos_url(self):
+        """Test that _public_repos_url returns the expected repos URL."""
+        test_payload = {"repos_url": "http://fake.url/repos"}
+
+        with patch.object(
+            GithubOrgClient,
+            "org",
+            new_callable=PropertyMock,
+        ) as mock_org:
+            mock_org.return_value = test_payload
+
+            client = GithubOrgClient("test_org")
+            result = client._public_repos_url
+
+            self.assertEqual(result, "http://fake.url/repos")
+            mock_org.assert_called_once()
 
     def test_public_repos(self):
         """Test GithubOrgClient.public_repos with mocked payload and URL."""
