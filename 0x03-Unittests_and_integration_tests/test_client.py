@@ -78,8 +78,8 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         repos_resp = Mock()
         repos_resp.json.return_value = cls.repos_payload
 
-        # patch requests.get so that the first call returns org_resp, second returns repos_resp
-        cls.get_patcher = patch("client.requests.get", side_effect=[org_resp, repos_resp])
+        # patch utils.requests.get so that the first call returns org_resp, second returns repos_resp
+        cls.get_patcher = patch("utils.requests.get", side_effect=[org_resp, repos_resp])
         cls.mock_get = cls.get_patcher.start()
 
     @classmethod
