@@ -78,9 +78,17 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         repos_resp = Mock()
         repos_resp.json.return_value = cls.repos_payload
 
-        # patch utils.requests.get so that the first call returns org_resp, second returns repos_resp
-        cls.get_patcher = patch("utils.requests.get", side_effect=[org_resp, repos_resp])
+        def get_side_effect(url, *args, **kwargs):
+            # if the requested URL looks like a repos URL return repos_resp,
+            # otherwise return org_resp
+            if url.endswith("/repos") or "/repos" in url:
+                return repos_resp
+            return org_resp
+
+        # patch the requests.get where utils.get_json actually calls it
+        cls.get_patcher = patch("utils.requests.get", side_effect=get_side_effect)
         cls.mock_get = cls.get_patcher.start()
+
 
     @classmethod
     def tearDownClass(cls):
